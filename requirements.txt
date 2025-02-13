@@ -1,0 +1,7 @@
+bio==1.6.2
+biopython==1.84
+numpy==1.22.3
+pandas==1.5.2
+pathspec==0.12.1
+typing_extensions==4.12.2
+
