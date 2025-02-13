@@ -1,0 +1,30 @@
+{
+    "@context": "https://w3id.org/codemeta/3.0",
+    "type": "SoftwareSourceCode",
+    "author": [
+        {
+            "id": "https://orcid.org/0000-0002-1789-2346",
+            "type": "Person",
+            "affiliation": {
+                "type": "Organization",
+                "name": "Bioscience, University of Exeter"
+            },
+            "email": "t.wacker2@exeter.ac.uk",
+            "familyName": "Wacker",
+            "givenName": "Theresa"
+        }
+    ],
+    "codeRepository": "https://github.com/ThWacker/Data_Steward_Assignment",
+    "dateCreated": "2025-02-13",
+    "dateModified": "2025-02-13",
+    "datePublished": "2025-02-13",
+    "description": "This is the assignment for the Data Steward position at the University of Exeter. Please clone this repo and run the wrapper script.",
+    "license": "https://spdx.org/licenses/MIT",
+    "name": "Data Steward Assignment",
+    "operatingSystem": "macOS and Linux",
+    "programmingLanguage": "Python 3",
+    "softwareRequirements": "Python 3.9 or above",
+    "version": "0.1.0",
+    "developmentStatus": "active",
+    "issueTracker": "https://github.com/ThWacker/Data_Steward_Assignment/issues"
+}
