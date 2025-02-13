@@ -45,7 +45,7 @@ def combine_allele_columns(df_alleles: pd.DataFrame)-> pd.DataFrame:
         df_alleles (pd.dataframe): the split off part of the pep file dataframe that contains only the alleles
 
     Returns:
-        df_alleles_cb (pd.DataFrame): A pandas dataframe with combines columns
+        merged_df (pd.DataFrame): A pandas dataframe with combines columns
     
     Raises:
         Exception
@@ -53,9 +53,10 @@ def combine_allele_columns(df_alleles: pd.DataFrame)-> pd.DataFrame:
     # merge every second column without caring about the headers (column 0 and 1, 2 and 3 etc.). Give the columns a new header that is the iterator divided by 2
     try:
         merged_df = pd.DataFrame({
-            i // 2: df.iloc[:, i].astype(str) + ' ' + df.iloc[:, i + 1].astype(str) 
-            for i in range(0, df.shape[1], 2)
-        })
+            i // 2: df_alleles.iloc[:, i].astype(str) + ' ' + df_alleles.iloc[:, i + 1].astype(str)
+            for i in range(0, df_alleles.shape[1], 2)
+        }
+        )
         return merged_df
     except Exception as err:
         print(f"Oh no! An error occured in the combine_allele_columns function: {err}")
@@ -77,14 +78,13 @@ def split_dataframe(df_ped: pd.DataFrame)->Tuple[pd.DataFrame, pd.DataFrame]:
     """
     #subset the dataframe into two subdataframes, with one containing the patient ID columns (0-6), and the rest the alleles
     try:
-        df_fam= df_ped.iloc[:,:7]
-        print(f"The fam part of the df:\n{df_fam}\n")
-        df_alleles = df_ped.iloc[:,7:]
-        print(f"The alleles part: \n {df_alleles}\n")
+        df_fam= df_ped.iloc[:,:6]# first half is columns 0-6 -> separate dataframe
+        df_alleles = df_ped.iloc[:,6:]# second half is all the alleles -> separate dataframe 
         return df_fam, df_alleles
     except Exception as err:
         print(f"Booo, there was an error in the split_dataframe function: {err}"
               )
+        raise
 
 def transpose_dataframe(df_alleles_cb: pd.DataFrame)-> pd.DataFrame:
     """
@@ -99,12 +99,12 @@ def transpose_dataframe(df_alleles_cb: pd.DataFrame)-> pd.DataFrame:
     Raises:
         Exception
     """
-    # the actual magic happens here: columns become rows. 
+    # the actual magic happens here: columns become rows. We can use pandas transpose function for that
     try:
         t_df_alleles_cb = df_alleles_cb.transpose()
         return t_df_alleles_cb
     except Exception as err:
-        print(f"The dataframe was not transposed because the following error happened: {err}")
+        print(f"The dataframe was not transposed because the following error happened: {err}\n Meh!\n")
         raise
 
 
@@ -141,15 +141,17 @@ def main():
     parser.add_argument('-p', '--ped', type=Path, required=True, help="The ped file to be transformed")
     parser.add_argument('-m', '--map', type=Path, required=True, help="The map file to be transformed")
  
-
     args = parser.parse_args()
+
+    #find the folder of the map and ped files
+    folder_path=Path(args.ped).parent
 
     #GET THE DATAFRAMES 
     try:
         #use read_csv to read in the data from the ped file
         df_ped=pd.read_csv(args.ped, sep=" ", header=None)
     except FileNotFoundError as err:
-        print("File was not found")
+        print(f"File was not found{err}")
         raise
     except pd.errors.EmptyDataError as err:
         print(f"No data: {err}")
@@ -187,11 +189,12 @@ def main():
 
     # SAVE TFAM file
     #new file
-    outfile_tfam = Path(args.ped.stem + ".tfam")
+    file_tfam = Path(args.ped.stem + ".tfam")
+    outfile_tfam= folder_path / file_tfam
 
     # try to save it to the file using pandas .to_csv
     try:
-        df_fam.to_csv(outfile_tfam, sep="\t", header=False)
+        df_fam.to_csv(outfile_tfam, sep="\t", header=False, index=False)
     except RuntimeError as err:
         print(f"An Error occured: {err}")#generic error
         raise
@@ -226,11 +229,12 @@ def main():
         raise
     # try to save it to the file using pandas .to_csv
      #new file
-    outfile_tpep = Path(args.ped.stem + ".tpep")
+    file_tpep = Path(args.ped.stem + ".tped")
+    outfile_tpep = folder_path / file_tpep
 
     # try to save it to the file using pandas .to_csv
     try:
-        tpep_df.to_csv(outfile_tpep, sep="\t", header=False)
+        tpep_df.to_csv(outfile_tpep, sep="\t", header=False, index= False)
     except RuntimeError as err:
         print(f"An Error occured: {err}")#generic error
         raise
