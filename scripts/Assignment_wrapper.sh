@@ -60,40 +60,15 @@ echo "Mandatory arguments have been provided!"
 
 # CHECK2: Function to check if a given Python command exists and print its version
 echo "Checking python version..."
-
-check_python_version() {
-    local potential_paths=(
-        "$1"
-        "/Library/Frameworks/Python.framework/Versions/3.9/bin/$1"
-        "/usr/local/bin/$1"
-        "/usr/bin/$1"
-    )
-
-    for path in "${potential_paths[@]}"; do
-        if command -v "$path" >/dev/null 2>&1; then
-            "$path" --version 2>&1
-            return 0
-        fi
-    done
-
-    echo "Command $1 not found."
-    return 1
-}
-
-# Capture the output of the check_python_version function
-python_version=$(check_python_version python || true)
-python3_version=$(check_python_version python3 || true)
-
-# Determine the default Python interpreter
-if [[ $python_version == *"Python "* ]]; then
-    echo "python is available: $python_version"
-    default_python="python"
-elif [[ $python3_version == *"Python "* ]]; then
-    echo "python3 is available: $python3_version"
+if command -v python3 &>/dev/null; then
     default_python="python3"
+elif command -v python &>/dev/null; then
+    default_python="python"
 else
-    diemsg "Neither python nor python3 is available."
+    die "Neither python nor python3 is available."
 fi
+
+$default_python --version
 
 ############
 ### MAIN ###
@@ -107,13 +82,37 @@ PARENT_DIR="$(dirname "$SCRIPT_DIR")"
 #check if environment exists or create one
 
 if [ ! -d DataSteward ]; then
-    "$default_python" -m venv DataSteward
+    "$default_python" -m venv DataSteward || die "Failed to create virtual environment."
 fi
 
 DataSteward/bin/pip install --upgrade pip
 DataSteward/bin/pip install -r "$PARENT_DIR"/requirements.txt
 source DataSteward/bin/activate
 
+#running manipulate_pep_prefix_and_columns.py
+
+echo "Running manipulate_ped_prefix_and_columns.py to fulfill objective 1 and 2"
+
+if  [[ -n $PREFIX && -n $COLUMN ]]; then
+    "$default_python"  "$SCRIPT_DIR"/manipulate_ped_prefix_and_columns.py -t "$PED" -p "$PREFIX" -c "$COLUMN" && true
+    EXIT_STATUS="$?"
+elif [[ -n $COLUMN ]]; then
+    "$default_python"  "$SCRIPT_DIR"/manipulate_ped_prefix_and_columns.py -t "$PED" -c "$COLUMN" && true
+    EXIT_STATUS="$?"
+elif [[ -n $PREFIX ]]; then
+    "$default_python"  "$SCRIPT_DIR"/manipulate_ped_prefix_and_columns.py -t "$PED" -p "$PREFIX" && true
+    EXIT_STATUS="$?"
+else
+    "$default_python"  "$SCRIPT_DIR"/manipulate_ped_prefix_and_columns.py -t "$PED" && true
+    EXIT_STATUS="$?"
+fi
+
+#check if the command failed with an exit status other than 0
+if [[ $EXIT_STATUS -ne 0 ]]; then
+    echo "Script failed with error ${EXIT_STATUS}. Check log for details!"
+    exit 1
+fi
+echo "Fulfilled objective 1 and 2!"
 #running ped_map_to_tped_tfam_transpose.py
 echo "Running ped_map_to_tped_tfam_transpose.py to fulfill objective 3"
 
@@ -127,27 +126,3 @@ if [[ $EXIT_STATUS -ne 0 ]]; then
 fi
 echo "Fulfilled objective 3!"
 
-#running manipulate_tfam_prefix_and_columns.py
-
-echo "Running manipulate_tfam_prefix_and_columns.py to fulfill objective 1 and 2"
-
-if  [[ -n $PREFIX && -n $COLUMN ]]; then
-    "$default_python"  "$SCRIPT_DIR"/manipulate_tfam_prefix_and_columns.py -t "$PARENT_DIR"/Data_steward_interview_task/My_SNPS.tfam -p "$PREFIX" -c "$COLUMN" && true
-    EXIT_STATUS="$?"
-elif [[ -n $COLUMN ]]; then
-    "$default_python"  "$SCRIPT_DIR"/manipulate_tfam_prefix_and_columns.py -t "$PARENT_DIR"/Data_steward_interview_task/My_SNPS.tfam -c "$COLUMN" && true
-    EXIT_STATUS="$?"
-elif [[ -n $PREFIX ]]; then
-    "$default_python"  "$SCRIPT_DIR"/manipulate_tfam_prefix_and_columns.py -t "$PARENT_DIR"/Data_steward_interview_task/My_SNPS.tfam -p "$PREFIX" && true
-    EXIT_STATUS="$?"
-else
-    "$default_python"  "$SCRIPT_DIR"/manipulate_tfam_prefix_and_columns.py -t "$PARENT_DIR"/Data_steward_interview_task/My_SNPS.tfam  && true
-    EXIT_STATUS="$?"
-fi
-
-#check if the command failed with an exit status other than 0
-if [[ $EXIT_STATUS -ne 0 ]]; then
-    echo "Script failed with error ${EXIT_STATUS}. Check log for details!"
-    exit 1
-fi
-echo "Fulfilled objective 1 and 2!"
