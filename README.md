@@ -28,15 +28,21 @@ You can see example output .tped and .tfam files in 'Data_steward_interview_task
 
 Git clone the repo
 
-``` git clone https://github.com/ThWacker/Data_Steward_Assignment.git```
+``` 
+git clone https://github.com/ThWacker/Data_Steward_Assignment.git
+```
 
 Change into the repo
 
-``` cd ~/your_path_to_the_repo/Data_Steward_Assignment```
+``` 
+cd ~/your_path_to_the_repo/Data_Steward_Assignment
+```
 
 Run the wrapper script like so (example):
 
-``` ./scripts/Assignment_wrapper.sh -m ./Data_steward_interview_task/My_SNPS.map -p ./Data_steward_interview_task/My_SNPS.ped ```
+``` 
+./scripts/Assignment_wrapper.sh -m ./Data_steward_interview_task/My_SNPS.map -p ./Data_steward_interview_task/My_SNPS.ped
+```
 
 # THANK YOU FOR CONSIDERING ME AS AN APPLICANT!
 
